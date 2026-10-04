@@ -31,12 +31,33 @@
     .title { font-size: 19px; font-weight: 700; color: var(--primary); text-align: center; margin-bottom: 16px; }
     .field-group { margin-bottom: 14px; }
     .field-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: block; }
-    .input-box {
+    .input-box, .textarea-box {
       width: 100%; padding: 11px 14px; border-radius: 14px; border: 1.5px solid var(--border);
       outline: none; font-size: 13.5px; background: #fff; color: var(--text); transition: all 0.2s;
     }
-    .input-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 133, 162, 0.2); }
+    .input-box:focus, .textarea-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 133, 162, 0.2); }
+    .textarea-box { resize: vertical; min-height: 75px; line-height: 1.5; }
     
+    /* กล่องเลือกรูปและ Preview */
+    .image-picker-box {
+      display: flex; flex-direction: column; gap: 8px; margin-top: 4px;
+    }
+    .file-input-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 9px 14px; background: #fff0f3; border: 1.5px dashed var(--primary);
+      border-radius: 14px; color: var(--primary); font-size: 12.5px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .file-input-btn:active { background: #ffe5ec; }
+    .img-preview {
+      width: 100%; height: 110px; border-radius: 14px; object-fit: cover;
+      border: 1.5px solid var(--border); margin-top: 4px; background: #fafafa;
+    }
+    .img-preview-circle {
+      width: 70px; height: 70px; border-radius: 50%; object-fit: cover;
+      border: 2px solid var(--border); margin-top: 4px; align-self: center;
+    }
+
     .btn {
       width: 100%; padding: 12px; border-radius: 18px; border: none; font-size: 14.5px; font-weight: 600;
       cursor: pointer; transition: all 0.2s; background: linear-gradient(135deg, #ffb3c6, var(--primary)); color: #fff;
@@ -44,7 +65,6 @@
     }
     .btn:active { transform: scale(0.98); }
     .btn-secondary { background: #fff; color: var(--primary); border: 1.5px solid var(--border); box-shadow: none; margin-top: 10px; }
-
     .hidden { display: none !important; }
   </style>
 </head>
@@ -65,31 +85,54 @@
     <button type="button" class="btn" onclick="handleLogin()">เข้าสู่ระบบ ♡</button>
   </div>
 
-  <!-- แผงแก้ไข -->
+  <!-- แผงแก้ไขข้อมูล -->
   <div id="dashboardBox" class="hidden">
     
-    <!-- 1. ข้อมูลหน้าร้าน -->
+    <!-- 1. ข้อมูลหน้าร้าน & จัดการรูปภาพ -->
     <div class="card">
-      <div class="title">🌸 ข้อมูลหน้าร้าน</div>
+      <div class="title">🌸 ข้อมูลหน้าร้าน & รูปภาพ</div>
+      
       <div class="field-group">
         <label class="field-label">ชื่อร้าน</label>
         <input type="text" id="storeName" class="input-box">
       </div>
+
       <div class="field-group">
-        <label class="field-label">ลิงก์รูปแบนเนอร์ (GIF/รูปภาพ)</label>
-        <input type="text" id="bannerImg" class="input-box">
+        <label class="field-label">คำอธิบายใต้ชื่อ (Bio)</label>
+        <textarea id="storeBio" class="textarea-box"></textarea>
       </div>
+
+      <!-- แบนเนอร์ (เลือกจากเครื่อง หรือ วางลิงก์ Pinterest) -->
       <div class="field-group">
-        <label class="field-label">ลิงก์รูปโปรไฟล์</label>
-        <input type="text" id="profileImg" class="input-box">
+        <label class="field-label">🖼️ รูปแบนเนอร์ (อัปโหลดตรง / ลิงก์ Pinterest / GIF)</label>
+        <div class="image-picker-box">
+          <label class="file-input-btn">
+            📁 เลือกรูปจากโทรศัพท์
+            <input type="file" accept="image/*" style="display: none;" onchange="handleFileUpload(event, 'banner')">
+          </label>
+          <input type="text" id="bannerImg" class="input-box" placeholder="หรือวาง URL ลิงก์รูป / ลิงก์ Pinterest" oninput="handleUrlInput('banner')">
+          <img id="bannerPreview" class="img-preview" src="">
+        </div>
+      </div>
+
+      <!-- โปรไฟล์ (เลือกจากเครื่อง หรือ วางลิงก์ Pinterest) -->
+      <div class="field-group">
+        <label class="field-label">👤 รูปโปรไฟล์ (อัปโหลดตรง / ลิงก์ Pinterest)</label>
+        <div class="image-picker-box">
+          <label class="file-input-btn">
+            📁 เลือกรูปจากโทรศัพท์
+            <input type="file" accept="image/*" style="display: none;" onchange="handleFileUpload(event, 'profile')">
+          </label>
+          <input type="text" id="profileImg" class="input-box" placeholder="หรือวาง URL ลิงก์รูป / ลิงก์ Pinterest" oninput="handleUrlInput('profile')">
+          <img id="profilePreview" class="img-preview-circle" src="">
+        </div>
       </div>
     </div>
 
-    <!-- 2. จัดการลิงก์ทั้ง 3 ปุ่ม -->
+    <!-- 2. จัดการปุ่มลิงก์ทั้ง 3 ปุ่ม -->
     <div class="card">
       <div class="title">🔗 แก้ไขปุ่มลิงก์</div>
       
-      <!-- ปุ่มที่ 1 -->
       <div style="border-bottom: 1.5px dashed var(--border); padding-bottom: 12px; margin-bottom: 12px;">
         <div class="field-group">
           <label class="field-label">ชื่อกล่อง 1 (Contact)</label>
@@ -101,7 +144,6 @@
         </div>
       </div>
 
-      <!-- ปุ่มที่ 2 -->
       <div style="border-bottom: 1.5px dashed var(--border); padding-bottom: 12px; margin-bottom: 12px;">
         <div class="field-group">
           <label class="field-label">ชื่อกล่อง 2 (Review)</label>
@@ -113,7 +155,6 @@
         </div>
       </div>
 
-      <!-- ปุ่มที่ 3 -->
       <div>
         <div class="field-group">
           <label class="field-label">ชื่อกล่อง 3 (Example)</label>
@@ -186,12 +227,81 @@
     }
   }
 
+  // แปลงลิงก์ Pinterest ให้เป็น Image Direct Link
+  function parsePinterestUrl(url) {
+    if (!url) return url;
+    // หากเป็นลิงก์รูป Pinterest อยู่แล้ว
+    if (url.includes("pinimg.com")) return url;
+    return url;
+  }
+
+  function handleUrlInput(type) {
+    const input = document.getElementById(type === 'banner' ? 'bannerImg' : 'profileImg');
+    const preview = document.getElementById(type === 'banner' ? 'bannerPreview' : 'profilePreview');
+    const parsed = parsePinterestUrl(input.value.trim());
+    preview.src = parsed;
+  }
+
+  // จัดการอัปโหลดไฟล์ตรงจากเครื่อง (บีบอัดอัตโนมัติเพื่อเก็บใน Firestore ได้รวดเร็ว)
+  function handleFileUpload(event, type) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // ปรับขนาดความกว้างไม่เกิน 800px เพื่อให้โหลดไว
+        const maxDimension = type === 'banner' ? 800 : 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height *= maxDimension / width;
+            width = maxDimension;
+          } else {
+            width *= maxDimension / height;
+            height = maxDimension;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // แปลงเป็น Data URL
+        const dataUrl = canvas.toDataURL("image/webp", 0.85);
+
+        if (type === 'banner') {
+          document.getElementById('bannerImg').value = dataUrl;
+          document.getElementById('bannerPreview').src = dataUrl;
+        } else {
+          document.getElementById('profileImg').value = dataUrl;
+          document.getElementById('profilePreview').src = dataUrl;
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
   function loadCurrentConfig() {
     db.collection("inyourheartselris_site").doc("config").get().then(doc => {
       const d = doc.exists ? doc.data() : {};
       document.getElementById("storeName").value = d.storeName || "inyourheartselris";
-      document.getElementById("bannerImg").value = d.bannerImg || "https://c.tenor.com/qvn5EduVCSDAAAAC/tenor.gif";
-      document.getElementById("profileImg").value = d.profileImg || "https://i.ibb.co/mCZ2x6pK/IMG-3558.jpg";
+      document.getElementById("storeBio").value = d.storeBio || `welcome to luvselris ♡ \nดูรีวิวกันก่อนได้นะคะ ตัวอย่างงานเว็บ งานป้าย คอนแทค 🪽`;
+      
+      const bannerSrc = d.bannerImg || "https://c.tenor.com/qvn5EduVCSDAAAAC/tenor.gif";
+      document.getElementById("bannerImg").value = bannerSrc;
+      document.getElementById("bannerPreview").src = bannerSrc;
+
+      const profileSrc = d.profileImg || "https://i.ibb.co/mCZ2x6pK/IMG-3558.jpg";
+      document.getElementById("profileImg").value = profileSrc;
+      document.getElementById("profilePreview").src = profileSrc;
 
       document.getElementById("link1_title").value = d.link1_title || "contact me @861pblyp";
       document.getElementById("link1_url").value = d.link1_url || "https://lin.ee/OK18dvs";
@@ -213,6 +323,7 @@
 
     const payload = {
       storeName: document.getElementById("storeName").value.trim(),
+      storeBio: document.getElementById("storeBio").value.trim(),
       bannerImg: document.getElementById("bannerImg").value.trim(),
       profileImg: document.getElementById("profileImg").value.trim(),
 
