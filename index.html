@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Firebase SDK สำหรับดึงข้อมูลสดจากแอดมิน -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -43,7 +43,80 @@
       overflow-x: hidden;
     }
 
-    /* กล่องสำหรับภาพลอยไปมา */
+    /* Pop-up การ์ดต้อนรับเพื่อให้เพลงเล่นทันที 100% */
+    .enter-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 229, 236, 0.96);
+      backdrop-filter: blur(10px);
+      z-index: 999999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .enter-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .enter-box {
+      background: #ffffff;
+      padding: 28px 24px;
+      border-radius: 28px;
+      border: 2px solid var(--melody-border);
+      box-shadow: 0 12px 35px rgba(255, 133, 162, 0.3);
+      text-align: center;
+      max-width: 320px;
+      width: 85%;
+      animation: popIntro 0.35s ease;
+    }
+
+    @keyframes popIntro {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .enter-icon {
+      width: 55px;
+      height: 55px;
+      object-fit: contain;
+      margin-bottom: 10px;
+      animation: gentleBounce 1.5s infinite ease-in-out;
+    }
+
+    .enter-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--melody-pink);
+      margin-bottom: 6px;
+    }
+
+    .enter-sub {
+      font-size: 13px;
+      color: var(--melody-muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .enter-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ffb3c6, var(--melody-pink));
+      color: #ffffff;
+      border: none;
+      padding: 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 6px 16px rgba(255, 133, 162, 0.35);
+      cursor: pointer;
+    }
+
+    /* ภาพมายเมโลดี้ลอยไปมา */
     .floating-layer {
       position: fixed;
       top: 0;
@@ -74,22 +147,32 @@
       100% { transform: translateY(-115vh) rotate(360deg); opacity: 0; }
     }
 
-    /* Element สำหรับแสดงมายเมโลดี้ตอนแตะหน้าจอ */
-    .touch-melody-follower {
+    /* สไตล์รูปมายเมโลดี้ที่โผล่มาตอนจิ้ม แล้วค่อยๆ จางหายไปแบบไว */
+    .touch-pop-melody {
       position: fixed;
-      width: 65px;
-      height: 65px;
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
       pointer-events: none;
-      z-index: 999999;
+      z-index: 99999;
       transform: translate(-50%, -50%) scale(0.6);
-      opacity: 0;
-      transition: opacity 0.15s ease, transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      filter: drop-shadow(0 6px 14px rgba(255, 133, 162, 0.45));
+      animation: popAndFadeQuick 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      filter: drop-shadow(0 4px 10px rgba(255, 133, 162, 0.4));
     }
 
-    .touch-melody-follower.active {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
+    @keyframes popAndFadeQuick {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      25% {
+        opacity: 1;
+        transform: translate(-50%, -60%) scale(1.1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -85%) scale(0.8);
+      }
     }
 
     .wrapper {
@@ -102,7 +185,7 @@
       gap: 14px;
     }
 
-    /* ส่วนหัวโปรไฟล์ + แบนเนอร์ */
+    /* ส่วนหัวโปรไฟล์ */
     .header-card {
       background: var(--melody-card);
       backdrop-filter: blur(14px);
@@ -149,7 +232,6 @@
       background: #fff;
     }
 
-    /* กรอบหัวมายเมโลดี้ครอบอยู่ด้านบน */
     .profile-hat-frame {
       position: absolute;
       top: -18px;
@@ -189,11 +271,20 @@
       50% { transform: translateY(-4px); }
     }
 
+    .store-bio {
+      font-size: 13px;
+      color: var(--melody-muted);
+      margin-top: 8px;
+      line-height: 1.6;
+      white-space: pre-line;
+      padding: 0 10px;
+    }
+
     .music-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      margin-top: 10px;
+      margin-top: 12px;
       background: #ffffff;
       border: 1.5px solid var(--melody-border);
       color: var(--melody-pink);
@@ -266,14 +357,21 @@
 </head>
 <body>
 
+  <!-- แตะ 1 ครั้งตรงนี้เพื่อเริ่มเล่นเพลงทันที 100% -->
+  <div class="enter-overlay" id="enterOverlay" onclick="enterSiteAndPlay()">
+    <div class="enter-box">
+      <img src="https://i.ibb.co/JFMdR2xf/IMG-3559.png" class="enter-icon" alt="My Melody">
+      <div class="enter-title">inyourheartselris ♡</div>
+      <div class="enter-sub">welcome to luvselris<br>แตะเพื่อเข้าสู่หน้าเว็บและฟังเพลงทันทีค่ะ ✨</div>
+      <button type="button" class="enter-btn">เข้าสู่เว็บไซต์ ♡</button>
+    </div>
+  </div>
+
   <!-- ตัวเล่นเพลงพื้นหลัง -->
-  <audio id="bgMusic" loop autoplay playsinline preload="auto" src="https://file.garden/asG8Gt-rqWIpi3II/%E0%B8%A2%E0%B8%B4%E0%B8%99%E0%B8%94%E0%B8%B5%20Ost.%E0%B8%A1%E0%B8%B2%E0%B8%95%E0%B8%B2%E0%B8%A5%E0%B8%94%E0%B8%B2%20sarah%20salola%20Official%20MV.mp3"></audio>
+  <audio id="bgMusic" loop preload="auto" src="https://file.garden/asG8Gt-rqWIpi3II/%E0%B8%A2%E0%B8%B4%E0%B8%99%E0%B8%94%E0%B8%B5%20Ost.%E0%B8%A1%E0%B8%B2%E0%B8%95%E0%B8%B2%E0%B8%A5%E0%B8%94%E0%B8%B2%20sarah%20salola%20Official%20MV.mp3"></audio>
 
   <!-- เลเยอร์ภาพมายเมโลดี้ลอยไปมา -->
   <div class="floating-layer" id="floatContainer"></div>
-
-  <!-- รูปมายเมโลดี้ที่จะเด้งตรงจุดที่แตะนิ้ว/คลิกเมาส์ -->
-  <img id="touchMelody" src="https://i.ibb.co/XrFt9B5G/IMG-3566.png" alt="Touch Melody" class="touch-melody-follower">
 
   <div class="wrapper">
     <!-- Header ส่วนหัวร้านค้า -->
@@ -284,7 +382,7 @@
       </div>
 
       <div class="profile-composite-wrap">
-        <!-- กรอบหัวมายเมโลดี้ครอบอยู่เหนือรูป -->
+        <!-- กรอบหัวมายเมโลดี้ -->
         <img id="headFrameImg" src="https://i.ibb.co/nqR30Rcw/IMG-3563.png" alt="Head Frame" class="profile-hat-frame">
         <!-- โปรไฟล์ -->
         <img id="profileImg" src="https://i.ibb.co/mCZ2x6pK/IMG-3558.jpg" alt="Profile" class="profile-img">
@@ -296,12 +394,16 @@
         <img id="miniMelodyIcon" src="https://i.ibb.co/JFMdR2xf/IMG-3559.png" alt="Melody Mini" class="mini-melody-icon">
       </div>
 
+      <!-- กล่องคำอธิบายในกล่องเดียวกับโปรไฟล์ -->
+      <div class="store-bio" id="storeBioText">welcome to luvselris ♡ 
+ดูรีวิวกันก่อนได้นะคะ ตัวอย่างงานเว็บ งานป้าย คอนแทค 🪽</div>
+
       <button type="button" class="music-btn" id="musicToggleBtn" onclick="toggleMusic()">
         <span id="musicIcon">▶</span> <span id="musicText">play music !</span>
       </button>
     </div>
 
-    <!-- รายการปุ่มลิงก์ทั้ง 3 ปุ่ม (แก้ไขในระบบแอดมินได้ตลอดเวลา) -->
+    <!-- รายการปุ่มลิงก์ทั้ง 3 ปุ่ม -->
     <div class="links-wrapper" id="linksList">
       <a href="https://lin.ee/OK18dvs" target="_blank" class="link-card" id="link1">
         <div class="link-left">
@@ -332,7 +434,7 @@
   </div>
 
   <script>
-    // 1. กำหนดค่า Firebase แยกอิสระเฉพาะ inyourheartselris_site
+    // 1. Firebase ดึงข้อมูลสดจากแอดมิน
     const firebaseConfig = {
       apiKey: "AIzaSyCpAGDSy1NRgmLV_g7qJrCpwOhU9MrfQyY",
       authDomain: "benefitie.firebaseapp.com",
@@ -345,27 +447,23 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // ดึงข้อมูลแบบเรียลไทม์จากระบบแอดมิน
     db.collection("inyourheartselris_site").doc("config").onSnapshot(doc => {
       if (doc.exists) {
         const d = doc.data();
         if (d.storeName) document.getElementById("storeNameText").textContent = d.storeName;
+        if (d.storeBio) document.getElementById("storeBioText").textContent = d.storeBio;
         if (d.bannerImg) document.getElementById("bannerImg").src = d.bannerImg;
         if (d.profileImg) document.getElementById("profileImg").src = d.profileImg;
 
-        // ลิงก์ที่ 1
         if (d.link1_title) document.getElementById("title1").textContent = d.link1_title;
         if (d.link1_url) document.getElementById("link1").href = d.link1_url;
 
-        // ลิงก์ที่ 2
         if (d.link2_title) document.getElementById("title2").textContent = d.link2_title;
         if (d.link2_url) document.getElementById("link2").href = d.link2_url;
 
-        // ลิงก์ที่ 3
         if (d.link3_title) document.getElementById("title3").textContent = d.link3_title;
         if (d.link3_url) document.getElementById("link3").href = d.link3_url;
 
-        // เพลง
         if (d.musicUrl && !music.src.endsWith(d.musicUrl)) {
           music.src = d.musicUrl;
           music.play().catch(() => {});
@@ -373,7 +471,7 @@
       }
     });
 
-    // 2. ระบบเพลงพื้นหลัง & ปลดล็อกเสียงอัตโนมัติเมื่อแตะหน้าจอ
+    // 2. ระบบเพลงเล่นทันที
     const music = document.getElementById('bgMusic');
     const musicIcon = document.getElementById('musicIcon');
     const musicText = document.getElementById('musicText');
@@ -388,6 +486,15 @@
       }
     }
 
+    function enterSiteAndPlay() {
+      document.getElementById('enterOverlay').classList.add('hidden');
+      music.play().then(() => {
+        updateAudioStatus(true);
+      }).catch(err => {
+        console.log("Play error:", err);
+      });
+    }
+
     function toggleMusic() {
       if (music.paused) {
         music.play().then(() => updateAudioStatus(true)).catch(() => {});
@@ -397,18 +504,7 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      music.play().then(() => updateAudioStatus(true)).catch(() => updateAudioStatus(false));
-      ['touchstart', 'click'].forEach(evt => {
-        document.body.addEventListener(evt, () => {
-          if (music.paused && musicText.textContent === "play music !") {
-            music.play().then(() => updateAudioStatus(true)).catch(() => {});
-          }
-        }, { once: true, passive: true });
-      });
-    });
-
-    // 3. ลูกเล่นภาพมายเมโลดี้ลอยไปมา
+    // 3. ภาพมายเมโลดี้ลอยไปมา
     const floatBox = document.getElementById("floatContainer");
     const floatingMelodyImg = "https://i.ibb.co/xN63n45/IMG-3564.png";
 
@@ -424,38 +520,32 @@
     }
     setInterval(createFloatingMelody, 1600);
 
-    // 4. ลูกเล่นแตะตรงไหนของหน้าจอ มายเมโลดี้จะโผล่มาตรงนั้น พอยกนิ้วจะหายไป
-    const touchMelody = document.getElementById("touchMelody");
+    // 4. จิ้มตรงไหน โผล่มาตรงนั้น แล้วค่อยๆ จางหายไปแบบไว
+    const tapMelodyImgSrc = "https://i.ibb.co/XrFt9B5G/IMG-3566.png";
 
-    function showTouchMelody(x, y) {
-      touchMelody.style.left = x + 'px';
-      touchMelody.style.top = y + 'px';
-      touchMelody.classList.add("active");
+    function spawnMelodyPop(x, y) {
+      const img = document.createElement("img");
+      img.src = tapMelodyImgSrc;
+      img.className = "touch-pop-melody";
+      img.style.left = x + "px";
+      img.style.top = y + "px";
+      document.body.appendChild(img);
+
+      // ลบออกจาก DOM ทันทีที่แอนิเมชันจางหายจบ (0.5 วินาที)
+      setTimeout(() => {
+        img.remove();
+      }, 500);
     }
 
-    function hideTouchMelody() {
-      touchMelody.classList.remove("active");
-    }
-
-    // สำหรับจอสัมผัส (มือถือ / iPad)
+    // รองรับทั้งสัมผัสจอและคลิกเมาส์
     window.addEventListener("touchstart", (e) => {
       const t = e.touches[0];
-      showTouchMelody(t.clientX, t.clientY);
+      spawnMelodyPop(t.clientX, t.clientY);
     }, { passive: true });
 
-    window.addEventListener("touchmove", (e) => {
-      const t = e.touches[0];
-      showTouchMelody(t.clientX, t.clientY);
-    }, { passive: true });
-
-    window.addEventListener("touchend", hideTouchMelody);
-    window.addEventListener("touchcancel", hideTouchMelody);
-
-    // สำหรับคอมพิวเตอร์ (เมาส์)
     window.addEventListener("mousedown", (e) => {
-      showTouchMelody(e.clientX, e.clientY);
+      spawnMelodyPop(e.clientX, e.clientY);
     });
-    window.addEventListener("mouseup", hideTouchMelody);
   </script>
 </body>
 </html>
