@@ -3,115 +3,336 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title id="htmlTitle">marryme ♡</title>
+  <title>inyourheartselris ♡</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK สำหรับดึงข้อมูลสดจากแอดมิน -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <style>
     :root {
-      --primary: #f0728f;
-      --bg-top: #fff0f3;
-      --bg-bottom: #ffd8e0;
-      --border: #ffb6c1;
-      --card-bg: rgba(255, 255, 255, 0.95);
-      --text-main: #4a3b3e;
-      --text-muted: #917c80;
+      --melody-pink: #ff85a2;
+      --melody-soft: #ffb3c6;
+      --melody-light: #fff0f3;
+      --melody-card: rgba(255, 255, 255, 0.95);
+      --melody-border: #ffccd5;
+      --melody-text: #4a3b3e;
+      --melody-muted: #8a7377;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Quicksand', 'Mitr', sans-serif; -webkit-tap-highlight-color: transparent; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', 'Mitr', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
 
     body {
       min-height: 100vh;
-      color: var(--text-main);
+      color: var(--melody-text);
       display: flex;
       justify-content: center;
-      padding: 24px 14px 60px;
+      padding: 26px 14px 60px;
       position: relative;
-      background: radial-gradient(circle at top, var(--bg-top) 0%, #fff7f9 50%, var(--bg-bottom) 100%);
-      transition: background 0.3s ease;
+      background: radial-gradient(circle at top, #ffe5ec 0%, #fff0f3 50%, #ffd6e0 100%);
+      overflow-x: hidden;
     }
 
-    .wrapper { width: 100%; max-width: 390px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 14px; }
+    /* กล่องสำหรับภาพลอยไปมา */
+    .floating-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
 
-    /* Header Profile */
+    .float-item {
+      position: absolute;
+      bottom: -80px;
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      pointer-events: none;
+      animation: floatUp 12s linear infinite;
+      opacity: 0.85;
+      filter: drop-shadow(0 4px 8px rgba(255, 133, 162, 0.25));
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      15% { opacity: 0.9; }
+      85% { opacity: 0.9; }
+      100% { transform: translateY(-115vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* Element สำหรับแสดงมายเมโลดี้ตอนแตะหน้าจอ */
+    .touch-melody-follower {
+      position: fixed;
+      width: 65px;
+      height: 65px;
+      pointer-events: none;
+      z-index: 999999;
+      transform: translate(-50%, -50%) scale(0.6);
+      opacity: 0;
+      transition: opacity 0.15s ease, transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      filter: drop-shadow(0 6px 14px rgba(255, 133, 162, 0.45));
+    }
+
+    .touch-melody-follower.active {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 390px;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ส่วนหัวโปรไฟล์ + แบนเนอร์ */
     .header-card {
-      background: var(--card-bg); backdrop-filter: blur(14px); border-radius: 28px;
-      padding: 12px 12px 22px; text-align: center; border: 2px solid #ffffff;
-      box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+      background: var(--melody-card);
+      backdrop-filter: blur(14px);
+      border-radius: 30px;
+      padding: 12px 12px 22px;
+      text-align: center;
+      border: 2px solid #ffffff;
+      box-shadow: 0 10px 28px rgba(255, 133, 162, 0.2);
     }
-    .banner-container { width: 100%; height: 140px; border-radius: 22px; overflow: hidden; background: #eee; }
-    .banner-img { width: 100%; height: 100%; object-fit: cover; }
-    .profile-wrap { position: relative; margin-top: -46px; display: inline-block; }
+
+    .banner-container {
+      width: 100%;
+      height: 145px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #ffe6ec;
+      border: 1.5px solid #ffffff;
+    }
+
+    .banner-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-composite-wrap {
+      position: relative;
+      margin-top: -50px;
+      display: inline-block;
+      width: 100px;
+      height: 100px;
+    }
+
     .profile-img {
-      width: 88px; height: 88px; border-radius: 50%; object-fit: cover;
-      border: 4px solid #ffffff; box-shadow: 0 6px 18px rgba(0,0,0,0.12); background: #ffffff;
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3.5px solid #ffffff;
+      box-shadow: 0 6px 18px rgba(255, 133, 162, 0.28);
+      position: absolute;
+      bottom: 0;
+      left: 7px;
+      background: #fff;
     }
-    .page-title { font-size: 20px; font-weight: 700; color: var(--primary); letter-spacing: 0.3px; margin-top: 8px; }
-    .page-bio { font-size: 13px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; white-space: pre-line; padding: 0 10px; }
-    
+
+    /* กรอบหัวมายเมโลดี้ครอบอยู่ด้านบน */
+    .profile-hat-frame {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 95px;
+      height: auto;
+      z-index: 3;
+      pointer-events: none;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.1));
+    }
+
+    .store-title-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .store-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--melody-pink);
+      letter-spacing: 0.4px;
+    }
+
+    .mini-melody-icon {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+      animation: gentleBounce 2s infinite ease-in-out;
+    }
+
+    @keyframes gentleBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
     .music-btn {
-      display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; background: #ffffff;
-      border: 1.5px solid var(--border); color: var(--primary); padding: 5px 16px; border-radius: 20px;
-      font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      background: #ffffff;
+      border: 1.5px solid var(--melody-border);
+      color: var(--melody-pink);
+      padding: 5px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(255, 179, 198, 0.3);
+      transition: all 0.2s ease;
     }
 
-    /* Container รวมปุ่มลิงก์ */
-    .links-wrapper { display: flex; flex-direction: column; gap: 12px; }
-
-    .link-button {
-      background: var(--card-bg); backdrop-filter: blur(12px); border-radius: 20px;
-      padding: 16px 18px; border: 2px solid #ffffff; box-shadow: 0 6px 20px rgba(0,0,0,0.05);
-      display: flex; align-items: center; justify-content: space-between; text-decoration: none;
-      color: var(--text-main); font-size: 14px; font-weight: 600; transition: transform 0.2s ease, box-shadow 0.2s ease;
+    .music-btn:active {
+      transform: scale(0.96);
     }
-    .link-button:active { transform: scale(0.97); }
-    .link-left { display: flex; align-items: center; gap: 12px; }
-    .link-icon-box { font-size: 20px; }
-    .link-arrow { color: var(--primary); font-size: 16px; font-weight: 700; }
 
-    .footer-badge {
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      background: rgba(255, 255, 255, 0.85); border: 1.5px solid var(--border);
-      border-radius: 20px; padding: 6px 18px; margin: 12px auto 0; font-size: 11.5px; color: var(--primary); font-weight: 600;
+    /* รายการปุ่มลิงก์ */
+    .links-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .link-card {
+      background: var(--melody-card);
+      backdrop-filter: blur(12px);
+      border-radius: 22px;
+      padding: 15px 18px;
+      border: 2px solid #ffffff;
+      box-shadow: 0 6px 20px rgba(255, 133, 162, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-decoration: none;
+      color: var(--melody-text);
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .link-card:active {
+      transform: scale(0.97);
+    }
+
+    .link-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .link-tag-icon {
+      font-size: 18px;
+    }
+
+    .link-arrow {
+      color: var(--melody-pink);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .footer-text {
+      text-align: center;
+      font-size: 12px;
+      color: var(--melody-pink);
+      font-weight: 600;
+      margin-top: 14px;
+      letter-spacing: 0.5px;
     }
   </style>
 </head>
 <body>
 
-  <!-- เพลงพื้นหลัง -->
-  <audio id="bgMusic" loop autoplay playsinline preload="auto" src="https://d.uguu.se/JMOxdyUk.mp3"></audio>
+  <!-- ตัวเล่นเพลงพื้นหลัง -->
+  <audio id="bgMusic" loop autoplay playsinline preload="auto" src="https://file.garden/asG8Gt-rqWIpi3II/%E0%B8%A2%E0%B8%B4%E0%B8%99%E0%B8%94%E0%B8%B5%20Ost.%E0%B8%A1%E0%B8%B2%E0%B8%95%E0%B8%B2%E0%B8%A5%E0%B8%94%E0%B8%B2%20sarah%20salola%20Official%20MV.mp3"></audio>
+
+  <!-- เลเยอร์ภาพมายเมโลดี้ลอยไปมา -->
+  <div class="floating-layer" id="floatContainer"></div>
+
+  <!-- รูปมายเมโลดี้ที่จะเด้งตรงจุดที่แตะนิ้ว/คลิกเมาส์ -->
+  <img id="touchMelody" src="https://i.ibb.co/XrFt9B5G/IMG-3566.png" alt="Touch Melody" class="touch-melody-follower">
 
   <div class="wrapper">
-    <!-- Header -->
+    <!-- Header ส่วนหัวร้านค้า -->
     <div class="header-card">
       <div class="banner-container">
-        <img id="bannerImg" src="https://i.ibb.co/hRnYBqTR/line-oa-chat-261003-221517.jpg" alt="Banner" class="banner-img">
+        <!-- แบนเนอร์ gif -->
+        <img id="bannerImg" src="https://c.tenor.com/qvn5EduVCSDAAAAC/tenor.gif" alt="Banner GIF" class="banner-img">
       </div>
-      <div class="profile-wrap">
-        <img id="profileImg" src="https://i.ibb.co/zWGhKK93/line-oa-chat-261003-221515.jpg" alt="Profile" class="profile-img">
+
+      <div class="profile-composite-wrap">
+        <!-- กรอบหัวมายเมโลดี้ครอบอยู่เหนือรูป -->
+        <img id="headFrameImg" src="https://i.ibb.co/nqR30Rcw/IMG-3563.png" alt="Head Frame" class="profile-hat-frame">
+        <!-- โปรไฟล์ -->
+        <img id="profileImg" src="https://i.ibb.co/mCZ2x6pK/IMG-3558.jpg" alt="Profile" class="profile-img">
       </div>
-      <div class="page-title" id="siteTitle">marryme ♡</div>
-      <div class="page-bio" id="siteBio">welcome to marryme store ♡
-รวมช่องทางการติดต่อและบริการทั้งหมด</div>
+
+      <div class="store-title-wrap">
+        <h1 class="store-name" id="storeNameText">inyourheartselris</h1>
+        <!-- ภาพมายเมโลดี้จิ๋วอยู่ข้างๆชื่อ -->
+        <img id="miniMelodyIcon" src="https://i.ibb.co/JFMdR2xf/IMG-3559.png" alt="Melody Mini" class="mini-melody-icon">
+      </div>
+
       <button type="button" class="music-btn" id="musicToggleBtn" onclick="toggleMusic()">
         <span id="musicIcon">▶</span> <span id="musicText">play music !</span>
       </button>
     </div>
 
-    <!-- รายการปุ่มลิงก์ (ดึงสดจากแอดมิน) -->
-    <div class="links-wrapper" id="linksContainer"></div>
+    <!-- รายการปุ่มลิงก์ทั้ง 3 ปุ่ม (แก้ไขในระบบแอดมินได้ตลอดเวลา) -->
+    <div class="links-wrapper" id="linksList">
+      <a href="https://lin.ee/OK18dvs" target="_blank" class="link-card" id="link1">
+        <div class="link-left">
+          <span class="link-tag-icon">💬</span>
+          <span id="title1">contact me @861pblyp</span>
+        </div>
+        <span class="link-arrow">➔</span>
+      </a>
 
-    <div style="text-align: center;">
-      <div class="footer-badge" id="footerBadge">🌸 marryme ♡</div>
+      <a href="https://luvselris.web.app/#review" target="_blank" class="link-card" id="link2">
+        <div class="link-left">
+          <span class="link-tag-icon">💌</span>
+          <span id="title2">review click</span>
+        </div>
+        <span class="link-arrow">➔</span>
+      </a>
+
+      <a href="https://drive.google.com/drive/folders/1VPUYkyqywBZgPIOjGnPbY2OpQn7BJwdq" target="_blank" class="link-card" id="link3">
+        <div class="link-left">
+          <span class="link-tag-icon">📁</span>
+          <span id="title3">example เว็บ & ป้าย click</span>
+        </div>
+        <span class="link-arrow">➔</span>
+      </a>
     </div>
+
+    <div class="footer-text">thank you ♡</div>
   </div>
 
   <script>
+    // 1. กำหนดค่า Firebase แยกอิสระเฉพาะ inyourheartselris_site
     const firebaseConfig = {
       apiKey: "AIzaSyCpAGDSy1NRgmLV_g7qJrCpwOhU9MrfQyY",
       authDomain: "benefitie.firebaseapp.com",
@@ -124,48 +345,27 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    function renderClientLinks(links) {
-      const container = document.getElementById("linksContainer");
-      container.innerHTML = "";
-      if (!links || links.length === 0) return;
-
-      links.forEach(l => {
-        const a = document.createElement("a");
-        a.href = l.url;
-        a.target = "_blank";
-        a.className = "link-button";
-        a.innerHTML = `
-          <div class="link-left">
-            <span class="link-icon-box">${l.icon || '🎀'}</span>
-            <span>${l.title}</span>
-          </div>
-          <span class="link-arrow">➔</span>
-        `;
-        container.appendChild(a);
-      });
-    }
-
-    // ดึงข้อมูล Realtime
-    db.collection("marryme_linktree").doc("config").onSnapshot(doc => {
+    // ดึงข้อมูลแบบเรียลไทม์จากระบบแอดมิน
+    db.collection("inyourheartselris_site").doc("config").onSnapshot(doc => {
       if (doc.exists) {
         const d = doc.data();
-
-        if (d.themePrimary) document.documentElement.style.setProperty('--primary', d.themePrimary);
-        if (d.themeBgTop) document.documentElement.style.setProperty('--bg-top', d.themeBgTop);
-        if (d.themeBgBottom) document.documentElement.style.setProperty('--bg-bottom', d.themeBgBottom);
-        if (d.themeBorder) document.documentElement.style.setProperty('--border', d.themeBorder);
-
-        if (d.siteTitle) {
-          document.getElementById("siteTitle").textContent = d.siteTitle;
-          document.getElementById("htmlTitle").textContent = d.siteTitle;
-          document.getElementById("footerBadge").textContent = "🌸 " + d.siteTitle;
-        }
-        if (d.siteBio) document.getElementById("siteBio").textContent = d.siteBio;
+        if (d.storeName) document.getElementById("storeNameText").textContent = d.storeName;
         if (d.bannerImg) document.getElementById("bannerImg").src = d.bannerImg;
         if (d.profileImg) document.getElementById("profileImg").src = d.profileImg;
 
-        if (d.links) renderClientLinks(d.links);
+        // ลิงก์ที่ 1
+        if (d.link1_title) document.getElementById("title1").textContent = d.link1_title;
+        if (d.link1_url) document.getElementById("link1").href = d.link1_url;
 
+        // ลิงก์ที่ 2
+        if (d.link2_title) document.getElementById("title2").textContent = d.link2_title;
+        if (d.link2_url) document.getElementById("link2").href = d.link2_url;
+
+        // ลิงก์ที่ 3
+        if (d.link3_title) document.getElementById("title3").textContent = d.link3_title;
+        if (d.link3_url) document.getElementById("link3").href = d.link3_url;
+
+        // เพลง
         if (d.musicUrl && !music.src.endsWith(d.musicUrl)) {
           music.src = d.musicUrl;
           music.play().catch(() => {});
@@ -173,19 +373,28 @@
       }
     });
 
-    // เครื่องเล่นเสียง
+    // 2. ระบบเพลงพื้นหลัง & ปลดล็อกเสียงอัตโนมัติเมื่อแตะหน้าจอ
     const music = document.getElementById('bgMusic');
     const musicIcon = document.getElementById('musicIcon');
     const musicText = document.getElementById('musicText');
 
     function updateAudioStatus(isPlaying) {
-      if (isPlaying) { musicIcon.textContent = "❚❚"; musicText.textContent = "pause music"; }
-      else { musicIcon.textContent = "▶"; musicText.textContent = "play music !"; }
+      if (isPlaying) {
+        musicIcon.textContent = "❚❚";
+        musicText.textContent = "pause music";
+      } else {
+        musicIcon.textContent = "▶";
+        musicText.textContent = "play music !";
+      }
     }
 
     function toggleMusic() {
-      if (music.paused) music.play().then(() => updateAudioStatus(true)).catch(() => {});
-      else { music.pause(); updateAudioStatus(false); }
+      if (music.paused) {
+        music.play().then(() => updateAudioStatus(true)).catch(() => {});
+      } else {
+        music.pause();
+        updateAudioStatus(false);
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -198,6 +407,55 @@
         }, { once: true, passive: true });
       });
     });
+
+    // 3. ลูกเล่นภาพมายเมโลดี้ลอยไปมา
+    const floatBox = document.getElementById("floatContainer");
+    const floatingMelodyImg = "https://i.ibb.co/xN63n45/IMG-3564.png";
+
+    function createFloatingMelody() {
+      const el = document.createElement("img");
+      el.src = floatingMelodyImg;
+      el.className = "float-item";
+      el.style.left = (Math.random() * 90) + "vw";
+      el.style.animationDuration = (8 + Math.random() * 6) + "s";
+      el.style.width = (40 + Math.random() * 20) + "px";
+      floatBox.appendChild(el);
+      setTimeout(() => { el.remove(); }, 14000);
+    }
+    setInterval(createFloatingMelody, 1600);
+
+    // 4. ลูกเล่นแตะตรงไหนของหน้าจอ มายเมโลดี้จะโผล่มาตรงนั้น พอยกนิ้วจะหายไป
+    const touchMelody = document.getElementById("touchMelody");
+
+    function showTouchMelody(x, y) {
+      touchMelody.style.left = x + 'px';
+      touchMelody.style.top = y + 'px';
+      touchMelody.classList.add("active");
+    }
+
+    function hideTouchMelody() {
+      touchMelody.classList.remove("active");
+    }
+
+    // สำหรับจอสัมผัส (มือถือ / iPad)
+    window.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      showTouchMelody(t.clientX, t.clientY);
+    }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+      const t = e.touches[0];
+      showTouchMelody(t.clientX, t.clientY);
+    }, { passive: true });
+
+    window.addEventListener("touchend", hideTouchMelody);
+    window.addEventListener("touchcancel", hideTouchMelody);
+
+    // สำหรับคอมพิวเตอร์ (เมาส์)
+    window.addEventListener("mousedown", (e) => {
+      showTouchMelody(e.clientX, e.clientY);
+    });
+    window.addEventListener("mouseup", hideTouchMelody);
   </script>
 </body>
 </html>
