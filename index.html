@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title id="htmlTitle">marryme ♡</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #f0728f;
+      --bg-top: #fff0f3;
+      --bg-bottom: #ffd8e0;
+      --border: #ffb6c1;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --text-main: #4a3b3e;
+      --text-muted: #917c80;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Quicksand', 'Mitr', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      min-height: 100vh;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      padding: 24px 14px 60px;
+      position: relative;
+      background: radial-gradient(circle at top, var(--bg-top) 0%, #fff7f9 50%, var(--bg-bottom) 100%);
+      transition: background 0.3s ease;
+    }
+
+    .wrapper { width: 100%; max-width: 390px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 14px; }
+
+    /* Header Profile */
+    .header-card {
+      background: var(--card-bg); backdrop-filter: blur(14px); border-radius: 28px;
+      padding: 12px 12px 22px; text-align: center; border: 2px solid #ffffff;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+    }
+    .banner-container { width: 100%; height: 140px; border-radius: 22px; overflow: hidden; background: #eee; }
+    .banner-img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-wrap { position: relative; margin-top: -46px; display: inline-block; }
+    .profile-img {
+      width: 88px; height: 88px; border-radius: 50%; object-fit: cover;
+      border: 4px solid #ffffff; box-shadow: 0 6px 18px rgba(0,0,0,0.12); background: #ffffff;
+    }
+    .page-title { font-size: 20px; font-weight: 700; color: var(--primary); letter-spacing: 0.3px; margin-top: 8px; }
+    .page-bio { font-size: 13px; color: var(--text-muted); margin-top: 6px; line-height: 1.6; white-space: pre-line; padding: 0 10px; }
+    
+    .music-btn {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; background: #ffffff;
+      border: 1.5px solid var(--border); color: var(--primary); padding: 5px 16px; border-radius: 20px;
+      font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: all 0.2s ease;
+    }
+
+    /* Container รวมปุ่มลิงก์ */
+    .links-wrapper { display: flex; flex-direction: column; gap: 12px; }
+
+    .link-button {
+      background: var(--card-bg); backdrop-filter: blur(12px); border-radius: 20px;
+      padding: 16px 18px; border: 2px solid #ffffff; box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+      display: flex; align-items: center; justify-content: space-between; text-decoration: none;
+      color: var(--text-main); font-size: 14px; font-weight: 600; transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .link-button:active { transform: scale(0.97); }
+    .link-left { display: flex; align-items: center; gap: 12px; }
+    .link-icon-box { font-size: 20px; }
+    .link-arrow { color: var(--primary); font-size: 16px; font-weight: 700; }
+
+    .footer-badge {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      background: rgba(255, 255, 255, 0.85); border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 6px 18px; margin: 12px auto 0; font-size: 11.5px; color: var(--primary); font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- เพลงพื้นหลัง -->
+  <audio id="bgMusic" loop autoplay playsinline preload="auto" src="https://d.uguu.se/JMOxdyUk.mp3"></audio>
+
+  <div class="wrapper">
+    <!-- Header -->
+    <div class="header-card">
+      <div class="banner-container">
+        <img id="bannerImg" src="https://i.ibb.co/hRnYBqTR/line-oa-chat-261003-221517.jpg" alt="Banner" class="banner-img">
+      </div>
+      <div class="profile-wrap">
+        <img id="profileImg" src="https://i.ibb.co/zWGhKK93/line-oa-chat-261003-221515.jpg" alt="Profile" class="profile-img">
+      </div>
+      <div class="page-title" id="siteTitle">marryme ♡</div>
+      <div class="page-bio" id="siteBio">welcome to marryme store ♡
+รวมช่องทางการติดต่อและบริการทั้งหมด</div>
+      <button type="button" class="music-btn" id="musicToggleBtn" onclick="toggleMusic()">
+        <span id="musicIcon">▶</span> <span id="musicText">play music !</span>
+      </button>
+    </div>
+
+    <!-- รายการปุ่มลิงก์ (ดึงสดจากแอดมิน) -->
+    <div class="links-wrapper" id="linksContainer"></div>
+
+    <div style="text-align: center;">
+      <div class="footer-badge" id="footerBadge">🌸 marryme ♡</div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCpAGDSy1NRgmLV_g7qJrCpwOhU9MrfQyY",
+      authDomain: "benefitie.firebaseapp.com",
+      projectId: "benefitie",
+      storageBucket: "benefitie.firebasestorage.app",
+      messagingSenderId: "270365672215",
+      appId: "1:270365672215:web:230d1491091e26ce83ed52"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function renderClientLinks(links) {
+      const container = document.getElementById("linksContainer");
+      container.innerHTML = "";
+      if (!links || links.length === 0) return;
+
+      links.forEach(l => {
+        const a = document.createElement("a");
+        a.href = l.url;
+        a.target = "_blank";
+        a.className = "link-button";
+        a.innerHTML = `
+          <div class="link-left">
+            <span class="link-icon-box">${l.icon || '🎀'}</span>
+            <span>${l.title}</span>
+          </div>
+          <span class="link-arrow">➔</span>
+        `;
+        container.appendChild(a);
+      });
+    }
+
+    // ดึงข้อมูล Realtime
+    db.collection("marryme_linktree").doc("config").onSnapshot(doc => {
+      if (doc.exists) {
+        const d = doc.data();
+
+        if (d.themePrimary) document.documentElement.style.setProperty('--primary', d.themePrimary);
+        if (d.themeBgTop) document.documentElement.style.setProperty('--bg-top', d.themeBgTop);
+        if (d.themeBgBottom) document.documentElement.style.setProperty('--bg-bottom', d.themeBgBottom);
+        if (d.themeBorder) document.documentElement.style.setProperty('--border', d.themeBorder);
+
+        if (d.siteTitle) {
+          document.getElementById("siteTitle").textContent = d.siteTitle;
+          document.getElementById("htmlTitle").textContent = d.siteTitle;
+          document.getElementById("footerBadge").textContent = "🌸 " + d.siteTitle;
+        }
+        if (d.siteBio) document.getElementById("siteBio").textContent = d.siteBio;
+        if (d.bannerImg) document.getElementById("bannerImg").src = d.bannerImg;
+        if (d.profileImg) document.getElementById("profileImg").src = d.profileImg;
+
+        if (d.links) renderClientLinks(d.links);
+
+        if (d.musicUrl && !music.src.endsWith(d.musicUrl)) {
+          music.src = d.musicUrl;
+          music.play().catch(() => {});
+        }
+      }
+    });
+
+    // เครื่องเล่นเสียง
+    const music = document.getElementById('bgMusic');
+    const musicIcon = document.getElementById('musicIcon');
+    const musicText = document.getElementById('musicText');
+
+    function updateAudioStatus(isPlaying) {
+      if (isPlaying) { musicIcon.textContent = "❚❚"; musicText.textContent = "pause music"; }
+      else { musicIcon.textContent = "▶"; musicText.textContent = "play music !"; }
+    }
+
+    function toggleMusic() {
+      if (music.paused) music.play().then(() => updateAudioStatus(true)).catch(() => {});
+      else { music.pause(); updateAudioStatus(false); }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      music.play().then(() => updateAudioStatus(true)).catch(() => updateAudioStatus(false));
+      ['touchstart', 'click'].forEach(evt => {
+        document.body.addEventListener(evt, () => {
+          if (music.paused && musicText.textContent === "play music !") {
+            music.play().then(() => updateAudioStatus(true)).catch(() => {});
+          }
+        }, { once: true, passive: true });
+      });
+    });
+  </script>
+</body>
+</html>
