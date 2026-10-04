@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Admin Dashboard ♡ inyourheartselris</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --primary: #ff85a2;
+      --bg: #fff0f3;
+      --card: rgba(255, 255, 255, 0.96);
+      --text: #4a3b3e;
+      --border: #ffccd5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Quicksand', 'Mitr', sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px 14px 60px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 440px; }
+    
+    .card {
+      background: var(--card); border-radius: 24px; padding: 22px 20px;
+      box-shadow: 0 10px 25px rgba(255, 133, 162, 0.15); border: 1.5px solid #fff; margin-bottom: 16px;
+    }
+    .title { font-size: 19px; font-weight: 700; color: var(--primary); text-align: center; margin-bottom: 16px; }
+    .field-group { margin-bottom: 14px; }
+    .field-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: block; }
+    .input-box {
+      width: 100%; padding: 11px 14px; border-radius: 14px; border: 1.5px solid var(--border);
+      outline: none; font-size: 13.5px; background: #fff; color: var(--text); transition: all 0.2s;
+    }
+    .input-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 133, 162, 0.2); }
+    
+    .btn {
+      width: 100%; padding: 12px; border-radius: 18px; border: none; font-size: 14.5px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; background: linear-gradient(135deg, #ffb3c6, var(--primary)); color: #fff;
+      box-shadow: 0 4px 14px rgba(255, 133, 162, 0.3); margin-top: 6px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-secondary { background: #fff; color: var(--primary); border: 1.5px solid var(--border); box-shadow: none; margin-top: 10px; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- ล็อกอิน -->
+  <div class="card" id="loginBox">
+    <div class="title">🔐 เข้าสู่ระบบแอดมิน (inyourheartselris)</div>
+    <div class="field-group">
+      <label class="field-label">อีเมลแอดมิน</label>
+      <input type="email" id="loginEmail" class="input-box" placeholder="srezinalm@gmail.com">
+    </div>
+    <div class="field-group">
+      <label class="field-label">รหัสผ่าน</label>
+      <input type="password" id="loginPassword" class="input-box" placeholder="กรอกรหัสผ่าน">
+    </div>
+    <button type="button" class="btn" onclick="handleLogin()">เข้าสู่ระบบ ♡</button>
+  </div>
+
+  <!-- แผงแก้ไข -->
+  <div id="dashboardBox" class="hidden">
+    
+    <!-- 1. ข้อมูลหน้าร้าน -->
+    <div class="card">
+      <div class="title">🌸 ข้อมูลหน้าร้าน</div>
+      <div class="field-group">
+        <label class="field-label">ชื่อร้าน</label>
+        <input type="text" id="storeName" class="input-box">
+      </div>
+      <div class="field-group">
+        <label class="field-label">ลิงก์รูปแบนเนอร์ (GIF/รูปภาพ)</label>
+        <input type="text" id="bannerImg" class="input-box">
+      </div>
+      <div class="field-group">
+        <label class="field-label">ลิงก์รูปโปรไฟล์</label>
+        <input type="text" id="profileImg" class="input-box">
+      </div>
+    </div>
+
+    <!-- 2. จัดการลิงก์ทั้ง 3 ปุ่ม -->
+    <div class="card">
+      <div class="title">🔗 แก้ไขปุ่มลิงก์</div>
+      
+      <!-- ปุ่มที่ 1 -->
+      <div style="border-bottom: 1.5px dashed var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+        <div class="field-group">
+          <label class="field-label">ชื่อกล่อง 1 (Contact)</label>
+          <input type="text" id="link1_title" class="input-box">
+        </div>
+        <div class="field-group">
+          <label class="field-label">URL ลิงก์ 1</label>
+          <input type="text" id="link1_url" class="input-box">
+        </div>
+      </div>
+
+      <!-- ปุ่มที่ 2 -->
+      <div style="border-bottom: 1.5px dashed var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+        <div class="field-group">
+          <label class="field-label">ชื่อกล่อง 2 (Review)</label>
+          <input type="text" id="link2_title" class="input-box">
+        </div>
+        <div class="field-group">
+          <label class="field-label">URL ลิงก์ 2</label>
+          <input type="text" id="link2_url" class="input-box">
+        </div>
+      </div>
+
+      <!-- ปุ่มที่ 3 -->
+      <div>
+        <div class="field-group">
+          <label class="field-label">ชื่อกล่อง 3 (Example)</label>
+          <input type="text" id="link3_title" class="input-box">
+        </div>
+        <div class="field-group">
+          <label class="field-label">URL ลิงก์ 3</label>
+          <input type="text" id="link3_url" class="input-box">
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. เพลงพื้นหลัง -->
+    <div class="card">
+      <div class="title">🎵 เพลงพื้นหลัง (Auto-play)</div>
+      <div class="field-group">
+        <label class="field-label">URL ไฟล์เสียง (.mp3)</label>
+        <input type="text" id="musicUrl" class="input-box">
+      </div>
+    </div>
+
+    <!-- 4. เปลี่ยนรหัสผ่าน -->
+    <div class="card">
+      <div class="title">🔑 เปลี่ยนรหัสผ่านแอดมิน</div>
+      <div class="field-group">
+        <label class="field-label">รหัสผ่านใหม่</label>
+        <input type="password" id="newAdminPassword" class="input-box" placeholder="ปล่อยว่างหากไม่ต้องการเปลี่ยน">
+      </div>
+    </div>
+
+    <button type="button" class="btn" id="saveBtn" onclick="saveAllSettings()">☁ บันทึกขึ้นระบบ (หน้าเว็บเปลี่ยนทันที) ♡</button>
+    <button type="button" class="btn btn-secondary" onclick="logout()">ออกจากระบบ</button>
+  </div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCpAGDSy1NRgmLV_g7qJrCpwOhU9MrfQyY",
+    authDomain: "benefitie.firebaseapp.com",
+    projectId: "benefitie",
+    storageBucket: "benefitie.firebasestorage.app",
+    messagingSenderId: "270365672215",
+    appId: "1:270365672215:web:230d1491091e26ce83ed52"
+  };
+
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  let currentAdminEmail = "srezinalm@gmail.com";
+  let currentAdminPass = "@Natthanan2911";
+
+  db.collection("inyourheartselris_site").doc("config").onSnapshot(doc => {
+    if (doc.exists) {
+      const d = doc.data();
+      if (d.adminEmail) currentAdminEmail = d.adminEmail;
+      if (d.adminPass) currentAdminPass = d.adminPass;
+    }
+  });
+
+  function handleLogin() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const pass = document.getElementById("loginPassword").value.trim();
+
+    if (email === currentAdminEmail && pass === currentAdminPass) {
+      document.getElementById("loginBox").classList.add("hidden");
+      document.getElementById("dashboardBox").classList.remove("hidden");
+      loadCurrentConfig();
+    } else {
+      alert("อีเมลหรือรหัสผ่านไม่ถูกต้องค่ะ!");
+    }
+  }
+
+  function loadCurrentConfig() {
+    db.collection("inyourheartselris_site").doc("config").get().then(doc => {
+      const d = doc.exists ? doc.data() : {};
+      document.getElementById("storeName").value = d.storeName || "inyourheartselris";
+      document.getElementById("bannerImg").value = d.bannerImg || "https://c.tenor.com/qvn5EduVCSDAAAAC/tenor.gif";
+      document.getElementById("profileImg").value = d.profileImg || "https://i.ibb.co/mCZ2x6pK/IMG-3558.jpg";
+
+      document.getElementById("link1_title").value = d.link1_title || "contact me @861pblyp";
+      document.getElementById("link1_url").value = d.link1_url || "https://lin.ee/OK18dvs";
+
+      document.getElementById("link2_title").value = d.link2_title || "review click";
+      document.getElementById("link2_url").value = d.link2_url || "https://luvselris.web.app/#review";
+
+      document.getElementById("link3_title").value = d.link3_title || "example เว็บ & ป้าย click";
+      document.getElementById("link3_url").value = d.link3_url || "https://drive.google.com/drive/folders/1VPUYkyqywBZgPIOjGnPbY2OpQn7BJwdq";
+
+      document.getElementById("musicUrl").value = d.musicUrl || "https://file.garden/asG8Gt-rqWIpi3II/%E0%B8%A2%E0%B8%B4%E0%B8%99%E0%B8%94%E0%B8%B5%20Ost.%E0%B8%A1%E0%B8%B2%E0%B8%95%E0%B8%B2%E0%B8%A5%E0%B8%94%E0%B8%B2%20sarah%20salola%20Official%20MV.mp3";
+    });
+  }
+
+  async function saveAllSettings() {
+    const saveBtn = document.getElementById("saveBtn");
+    saveBtn.disabled = true;
+    saveBtn.textContent = "กำลังบันทึก...";
+
+    const payload = {
+      storeName: document.getElementById("storeName").value.trim(),
+      bannerImg: document.getElementById("bannerImg").value.trim(),
+      profileImg: document.getElementById("profileImg").value.trim(),
+
+      link1_title: document.getElementById("link1_title").value.trim(),
+      link1_url: document.getElementById("link1_url").value.trim(),
+
+      link2_title: document.getElementById("link2_title").value.trim(),
+      link2_url: document.getElementById("link2_url").value.trim(),
+
+      link3_title: document.getElementById("link3_title").value.trim(),
+      link3_url: document.getElementById("link3_url").value.trim(),
+
+      musicUrl: document.getElementById("musicUrl").value.trim(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const newPass = document.getElementById("newAdminPassword").value.trim();
+    if (newPass) {
+      payload.adminPass = newPass;
+      currentAdminPass = newPass;
+    }
+
+    try {
+      await db.collection("inyourheartselris_site").doc("config").set(payload, { merge: true });
+      alert("บันทึกข้อมูลเรียบร้อยแล้วค่ะ! หน้าเว็บจะเปลี่ยนทันที");
+      document.getElementById("newAdminPassword").value = "";
+    } catch (err) {
+      alert("เกิดข้อผิดพลาด: " + err.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "☁️ บันทึกขึ้นระบบ (หน้าเว็บเปลี่ยนทันที) ♡";
+    }
+  }
+
+  function logout() {
+    document.getElementById("dashboardBox").classList.add("hidden");
+    document.getElementById("loginBox").classList.remove("hidden");
+    document.getElementById("loginPassword").value = "";
+  }
+</script>
+</body>
+</html>
